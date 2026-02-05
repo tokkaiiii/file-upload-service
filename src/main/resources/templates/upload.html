@@ -466,6 +466,11 @@
   function handleFiles(files) {
     if (files.length > 0) {
       selectedFiles = [files[0]]; // 파일 하나만 선택
+
+      // DataTransfer를 사용해 input의 files 속성 업데이트 (드래그 앤 드롭 시 필요)
+      const dt = new DataTransfer();
+      dt.items.add(files[0]);
+      fileInput.files = dt.files;
     }
     updatePreview();
     uploadBtn.disabled = selectedFiles.length === 0;
