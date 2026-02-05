@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>파일 업로드 - 파일 관리 시스템</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background-color: #f8fafc;
+      min-height: 100vh;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 48px 16px;
+    }
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: #64748b;
+      text-decoration: none;
+      font-size: 0.875rem;
+      margin-bottom: 24px;
+      transition: color 0.2s;
+    }
+    .back-link:hover {
+      color: #3b82f6;
+    }
+    .back-link svg {
+      width: 16px;
+      height: 16px;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+    .header h1 {
+      font-size: 2.25rem;
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: 8px;
+    }
+    .header p {
+      color: #64748b;
+      font-size: 1.125rem;
+    }
+    .card {
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 32px;
+    }
+    .upload-zone {
+      border: 2px dashed #e2e8f0;
+      border-radius: 12px;
+      padding: 48px 24px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .upload-zone:hover,
+    .upload-zone.dragover {
+      border-color: #3b82f6;
+      background-color: #eff6ff;
+    }
+    .upload-icon {
+      width: 64px;
+      height: 64px;
+      border-radius: 16px;
+      background-color: #dbeafe;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 16px;
+    }
+    .upload-icon svg {
+      width: 32px;
+      height: 32px;
+      color: #2563eb;
+    }
+    .upload-zone h3 {
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: #0f172a;
+      margin-bottom: 8px;
+    }
+    .upload-zone p {
+      color: #64748b;
+      font-size: 0.875rem;
+      margin-bottom: 16px;
+    }
+    .upload-zone small {
+      color: #94a3b8;
+      font-size: 0.75rem;
+    }
+    .browse-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      background-color: #f1f5f9;
+      color: #475569;
+      border-radius: 8px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      transition: all 0.2s;
+      cursor: pointer;
+      border: none;
+      margin-bottom: 16px;
+    }
+    .browse-btn:hover {
+      background-color: #e2e8f0;
+    }
+    .browse-btn svg {
+      width: 18px;
+      height: 18px;
+    }
+    .file-input {
+      display: none;
+    }
+    .file-preview {
+      margin-top: 24px;
+      padding: 16px;
+      background-color: #f8fafc;
+      border-radius: 12px;
+      display: none;
+    }
+    .file-preview.show {
+      display: block;
+    }
+    .file-preview-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .file-preview-header h4 {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: #0f172a;
+    }
+    .file-preview-header span {
+      font-size: 0.75rem;
+      color: #64748b;
+    }
+    .file-preview-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      margin-bottom: 8px;
+    }
+    .file-preview-item:last-child {
+      margin-bottom: 0;
+    }
+    .file-preview-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      background-color: #dbeafe;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .file-preview-icon svg {
+      width: 20px;
+      height: 20px;
+      color: #2563eb;
+    }
+    .file-preview-info {
+      flex: 1;
+      min-width: 0;
+    }
+    .file-preview-name {
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: #0f172a;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .file-preview-size {
+      font-size: 0.75rem;
+      color: #64748b;
+    }
+    .file-remove {
+      width: 32px;
+      height: 32px;
+      border-radius: 6px;
+      border: none;
+      background-color: transparent;
+      color: #94a3b8;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+    .file-remove:hover {
+      background-color: #fee2e2;
+      color: #dc2626;
+    }
+    .file-remove svg {
+      width: 16px;
+      height: 16px;
+    }
+    .filename-input-wrapper {
+      margin-top: 12px;
+      padding: 12px;
+      background-color: #f1f5f9;
+      border-radius: 8px;
+    }
+    .filename-input-wrapper label {
+      display: block;
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: #64748b;
+      margin-bottom: 6px;
+    }
+    .filename-input {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      font-size: 0.875rem;
+      color: #0f172a;
+      background-color: white;
+      transition: border-color 0.2s;
+    }
+    .filename-input:focus {
+      outline: none;
+      border-color: #3b82f6;
+    }
+    .filename-input::placeholder {
+      color: #94a3b8;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 14px 24px;
+      border-radius: 10px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      text-decoration: none;
+      transition: all 0.2s;
+      cursor: pointer;
+      border: none;
+      width: 100%;
+      margin-top: 24px;
+    }
+    .btn-primary {
+      background-color: #3b82f6;
+      color: white;
+    }
+    .btn-primary:hover {
+      background-color: #2563eb;
+    }
+    .btn-primary:disabled {
+      background-color: #94a3b8;
+      cursor: not-allowed;
+    }
+    .btn svg {
+      width: 18px;
+      height: 18px;
+    }
+    .message {
+      padding: 12px 16px;
+      border-radius: 10px;
+      margin-bottom: 24px;
+      font-size: 0.875rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .message-success {
+      background-color: #dcfce7;
+      color: #166534;
+      border: 1px solid #bbf7d0;
+    }
+    .message-error {
+      background-color: #fee2e2;
+      color: #991b1b;
+      border: 1px solid #fecaca;
+    }
+    .message svg {
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
+    }
+    .progress-bar {
+      width: 100%;
+      height: 4px;
+      background-color: #e2e8f0;
+      border-radius: 2px;
+      margin-top: 16px;
+      overflow: hidden;
+      display: none;
+    }
+    .progress-bar.show {
+      display: block;
+    }
+    .progress-fill {
+      height: 100%;
+      background-color: #3b82f6;
+      border-radius: 2px;
+      transition: width 0.3s;
+      width: 0%;
+    }
+    .quick-links {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      margin-top: 32px;
+    }
+    .quick-link {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: #64748b;
+      text-decoration: none;
+      font-size: 0.875rem;
+      transition: color 0.2s;
+    }
+    .quick-link:hover {
+      color: #3b82f6;
+    }
+    .quick-link svg {
+      width: 18px;
+      height: 18px;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <a th:href="@{/}" class="back-link">
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+    </svg>
+    홈으로 돌아가기
+  </a>
+
+  <div class="header">
+    <h1>파일 업로드</h1>
+    <p>드래그 앤 드롭 또는 파일 선택으로 업로드하세요</p>
+  </div>
+
+  <!-- 성공 메시지 -->
+  <div th:if="${message}" class="message message-success">
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+    </svg>
+    <span th:text="${message}">업로드 성공!</span>
+  </div>
+
+  <!-- 에러 메시지 -->
+  <div th:if="${error}" class="message message-error">
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+    </svg>
+    <span th:text="${error}">업로드 실패!</span>
+  </div>
+
+  <div class="card">
+    <form th:action="@{/upload}" method="post" enctype="multipart/form-data" id="uploadForm">
+      <div class="upload-zone" id="uploadZone">
+        <div class="upload-icon">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+          </svg>
+        </div>
+        <h3>파일을 여기에 드래그하세요</h3>
+        <p>또는 아래 버튼을 클릭하여 파일을 선택하세요</p>
+        <button type="button" class="browse-btn" onclick="document.getElementById('fileInput').click()">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/>
+          </svg>
+          파일 선택
+        </button>
+        <br>
+        <small>최대 파일 크기: 10MB</small>
+      </div>
+
+      <input type="file" name="file" id="fileInput" class="file-input">
+
+      <div class="file-preview" id="filePreview">
+        <div class="file-preview-header">
+          <h4>선택된 파일</h4>
+          <span id="fileCount">0개</span>
+        </div>
+        <div id="fileItems"></div>
+      </div>
+
+      <div class="progress-bar" id="progressBar">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+
+      <button type="submit" class="btn btn-primary" id="uploadBtn" disabled>
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+        </svg>
+        업로드하기
+      </button>
+    </form>
+  </div>
+
+  <div class="quick-links">
+    <a th:href="@{/files}" class="quick-link">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/>
+      </svg>
+      파일 목록 보기
+    </a>
+  </div>
+</div>
+
+<script>
+  const uploadZone = document.getElementById('uploadZone');
+  const fileInput = document.getElementById('fileInput');
+  const filePreview = document.getElementById('filePreview');
+  const fileItems = document.getElementById('fileItems');
+  const fileCount = document.getElementById('fileCount');
+  const uploadBtn = document.getElementById('uploadBtn');
+  let selectedFiles = [];
+
+  // 클릭으로 파일 선택
+  uploadZone.addEventListener('click', (e) => {
+    if (e.target.tagName !== 'BUTTON') {
+      fileInput.click();
+    }
+  });
+
+  // 드래그 앤 드롭 이벤트
+  uploadZone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    uploadZone.classList.add('dragover');
+  });
+
+  uploadZone.addEventListener('dragleave', () => {
+    uploadZone.classList.remove('dragover');
+  });
+
+  uploadZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    uploadZone.classList.remove('dragover');
+    handleFiles(e.dataTransfer.files);
+  });
+
+  // 파일 선택 이벤트
+  fileInput.addEventListener('change', (e) => {
+    handleFiles(e.target.files);
+  });
+
+  function handleFiles(files) {
+    if (files.length > 0) {
+      selectedFiles = [files[0]]; // 파일 하나만 선택
+    }
+    updatePreview();
+    uploadBtn.disabled = selectedFiles.length === 0;
+  }
+
+  function updatePreview() {
+    if (selectedFiles.length === 0) {
+      filePreview.classList.remove('show');
+      return;
+    }
+
+    filePreview.classList.add('show');
+    fileCount.textContent = '1개';
+
+    const file = selectedFiles[0];
+    const nameWithoutExt = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
+
+    fileItems.innerHTML = `
+                <div class="file-preview-item">
+                    <div class="file-preview-icon">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                        </svg>
+                    </div>
+                    <div class="file-preview-info">
+                        <div class="file-preview-name">${file.name}</div>
+                        <div class="file-preview-size">${formatFileSize(file.size)}</div>
+                    </div>
+                    <button type="button" class="file-remove" onclick="removeFile()">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="filename-input-wrapper">
+                    <label for="customFilenameInput">저장할 파일명 (선택사항)</label>
+                    <input type="text" name="customFilename" class="filename-input" id="customFilenameInput"
+                           placeholder="${nameWithoutExt}">
+                    <small style="color: #64748b; font-size: 0.75rem; margin-top: 4px; display: block;">
+                        비워두면 원본 파일명으로 저장됩니다. 확장자는 자동으로 붙습니다.
+                    </small>
+                </div>
+            `;
+  }
+
+  function removeFile() {
+    selectedFiles = [];
+    fileInput.value = '';
+    updatePreview();
+    uploadBtn.disabled = true;
+  }
+
+  function formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  }
+
+</script>
+</body>
+</html>

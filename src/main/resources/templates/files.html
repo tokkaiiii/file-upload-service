@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>파일 목록 - 파일 관리 시스템</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background-color: #f8fafc;
+      min-height: 100vh;
+    }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 48px 16px;
+    }
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: #64748b;
+      text-decoration: none;
+      font-size: 0.875rem;
+      margin-bottom: 24px;
+      transition: color 0.2s;
+    }
+    .back-link:hover {
+      color: #3b82f6;
+    }
+    .back-link svg {
+      width: 16px;
+      height: 16px;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+    .header h1 {
+      font-size: 2.25rem;
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: 8px;
+    }
+    .header p {
+      color: #64748b;
+      font-size: 1.125rem;
+    }
+    .card {
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      overflow: hidden;
+    }
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 24px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .card-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .card-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background-color: #dcfce7;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .card-icon svg {
+      width: 20px;
+      height: 20px;
+      color: #16a34a;
+    }
+    .card-title h2 {
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: #0f172a;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      border-radius: 10px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      text-decoration: none;
+      transition: all 0.2s;
+      cursor: pointer;
+      border: none;
+    }
+    .btn-primary {
+      background-color: #3b82f6;
+      color: white;
+    }
+    .btn-primary:hover {
+      background-color: #2563eb;
+    }
+    .btn svg {
+      width: 18px;
+      height: 18px;
+    }
+    .file-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .file-table th {
+      text-align: left;
+      padding: 12px 24px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      background-color: #f8fafc;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .file-table td {
+      padding: 16px 24px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .file-table tr:last-child td {
+      border-bottom: none;
+    }
+    .file-table tbody tr:hover {
+      background-color: #f8fafc;
+    }
+    .file-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .file-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background-color: #dbeafe;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .file-icon svg {
+      width: 20px;
+      height: 20px;
+      color: #2563eb;
+    }
+    .file-name {
+      font-weight: 500;
+      color: #0f172a;
+    }
+    .file-size {
+      color: #64748b;
+      font-size: 0.875rem;
+    }
+    .file-date {
+      color: #64748b;
+      font-size: 0.875rem;
+    }
+    .actions {
+      display: flex;
+      gap: 8px;
+    }
+    .action-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: none;
+    }
+    .action-btn svg {
+      width: 18px;
+      height: 18px;
+    }
+    .action-btn.download {
+      background-color: #dbeafe;
+      color: #2563eb;
+    }
+    .action-btn.download:hover {
+      background-color: #bfdbfe;
+    }
+    .action-btn.delete {
+      background-color: #fee2e2;
+      color: #dc2626;
+    }
+    .action-btn.delete:hover {
+      background-color: #fecaca;
+    }
+    .action-btn.preview {
+      background-color: #e0e7ff;
+      color: #4f46e5;
+    }
+    .action-btn.preview:hover {
+      background-color: #c7d2fe;
+    }
+    .file-icon.image-preview {
+      width: 40px;
+      height: 40px;
+      padding: 0;
+      overflow: hidden;
+    }
+    .file-icon.image-preview img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    /* 이미지 미리보기 모달 */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(0, 0, 0, 0.75);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 20px;
+    }
+    .modal-overlay.show {
+      display: flex;
+    }
+    .modal-content {
+      background: white;
+      border-radius: 16px;
+      max-width: 90vw;
+      max-height: 90vh;
+      overflow: hidden;
+      position: relative;
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 20px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .modal-header h3 {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #0f172a;
+    }
+    .modal-close {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background-color: #f1f5f9;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background-color 0.2s;
+    }
+    .modal-close:hover {
+      background-color: #e2e8f0;
+    }
+    .modal-close svg {
+      width: 18px;
+      height: 18px;
+      color: #64748b;
+    }
+    .modal-body {
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-body img {
+      max-width: 100%;
+      max-height: 70vh;
+      object-fit: contain;
+      border-radius: 8px;
+    }
+    .empty-state {
+      text-align: center;
+      padding: 64px 24px;
+    }
+    .empty-icon {
+      width: 64px;
+      height: 64px;
+      border-radius: 16px;
+      background-color: #f1f5f9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 16px;
+    }
+    .empty-icon svg {
+      width: 32px;
+      height: 32px;
+      color: #94a3b8;
+    }
+    .empty-state h3 {
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: #0f172a;
+      margin-bottom: 8px;
+    }
+    .empty-state p {
+      color: #64748b;
+      font-size: 0.875rem;
+      margin-bottom: 24px;
+    }
+    .message {
+      padding: 12px 16px;
+      border-radius: 10px;
+      margin-bottom: 24px;
+      font-size: 0.875rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .message-success {
+      background-color: #dcfce7;
+      color: #166534;
+      border: 1px solid #bbf7d0;
+    }
+    .message-error {
+      background-color: #fee2e2;
+      color: #991b1b;
+      border: 1px solid #fecaca;
+    }
+    .message svg {
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
+    }
+    @media (max-width: 640px) {
+      .card-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+      }
+      .file-table th,
+      .file-table td {
+        padding: 12px 16px;
+      }
+      .file-info {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+      }
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <a th:href="@{/}" class="back-link">
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+    </svg>
+    홈으로 돌아가기
+  </a>
+
+  <div class="header">
+    <h1>파일 목록</h1>
+    <p>업로드된 파일을 확인하고 관리하세요</p>
+  </div>
+
+  <!-- 성공 메시지 -->
+  <div th:if="${message}" class="message message-success">
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+    </svg>
+    <span th:text="${message}">성공!</span>
+  </div>
+
+  <!-- 에러 메시지 -->
+  <div th:if="${error}" class="message message-error">
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+    </svg>
+    <span th:text="${error}">에러!</span>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">
+        <div class="card-icon">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/>
+          </svg>
+        </div>
+        <h2>전체 파일</h2>
+      </div>
+      <a th:href="@{/upload}" class="btn btn-primary">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+        </svg>
+        파일 업로드
+      </a>
+    </div>
+
+    <!-- 파일이 있을 경우 -->
+    <div th:if="${files != null and !files.isEmpty()}">
+      <table class="file-table">
+        <thead>
+        <tr>
+          <th>파일명</th>
+          <th>크기</th>
+          <th>업로드 날짜</th>
+          <th>관리</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="file : ${files}">
+          <td>
+            <div class="file-info">
+              <!-- 이미지 파일인 경우 썸네일 표시 -->
+              <div th:if="${file.isImage}" class="file-icon image-preview">
+                <img th:src="@{/download/{id}(id=${file.id})}" th:alt="${file.name}">
+              </div>
+              <!-- 이미지가 아닌 경우 기본 아이콘 -->
+              <div th:unless="${file.isImage}" class="file-icon">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                </svg>
+              </div>
+              <span class="file-name" th:text="${file.name}">example.pdf</span>
+            </div>
+          </td>
+          <td class="file-size" th:text="${file.size}">2.5 MB</td>
+          <td class="file-date" th:text="${file.uploadDate}">2024-01-15</td>
+          <td>
+            <div class="actions">
+              <!-- 이미지 미리보기 버튼 -->
+              <button th:if="${file.isImage}" type="button" class="action-btn preview" title="미리보기"
+                      th:onclick="openPreview([[@{/download/{id}(id=${file.id})}]], [[${file.name}]])">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                </svg>
+              </button>
+              <a th:href="@{/attach/{id}(id=${file.id})}" class="action-btn download" title="다운로드">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                </svg>
+              </a>
+              <form th:action="@{/delete/{id}(id=${file.id})}" method="post" style="display: inline;">
+                <button type="submit" class="action-btn delete" title="삭제" onclick="return confirm('정말 삭제하시겠습니까?');">
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                  </svg>
+                </button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 파일이 없을 경우 -->
+    <div th:if="${files == null or files.isEmpty()}" class="empty-state">
+      <div class="empty-icon">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+        </svg>
+      </div>
+      <h3>업로드된 파일이 없습니다</h3>
+      <p>새로운 파일을 업로드해보세요</p>
+      <a th:href="@{/upload}" class="btn btn-primary">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+        </svg>
+        파일 업로드하기
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- 이미지 미리보기 모달 -->
+<div class="modal-overlay" id="imageModal" onclick="closePreview(event)">
+  <div class="modal-content" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <h3 id="modalTitle">이미지 미리보기</h3>
+      <button class="modal-close" onclick="closePreview()">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <img id="modalImage" src="" alt="미리보기">
+    </div>
+  </div>
+</div>
+
+<script>
+  function openPreview(imageUrl, fileName) {
+    document.getElementById('modalImage').src = imageUrl;
+    document.getElementById('modalTitle').textContent = fileName;
+    document.getElementById('imageModal').classList.add('show');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closePreview(event) {
+    if (event && event.target !== event.currentTarget) return;
+    document.getElementById('imageModal').classList.remove('show');
+    document.body.style.overflow = '';
+  }
+
+  // ESC 키로 모달 닫기
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      closePreview();
+    }
+  });
+</script>
+</body>
+</html>

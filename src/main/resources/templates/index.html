@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>파일 관리 시스템</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f8fafc;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 48px 16px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 48px;
+        }
+        .header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 8px;
+        }
+        .header p {
+            color: #64748b;
+            font-size: 1.125rem;
+        }
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 24px;
+        }
+        .card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 32px;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        .card:hover {
+            border-color: #3b82f6;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
+        }
+        .card-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 16px;
+        }
+        .card-icon.blue {
+            background-color: #dbeafe;
+        }
+        .card-icon.green {
+            background-color: #dcfce7;
+        }
+        .card-icon svg {
+            width: 28px;
+            height: 28px;
+        }
+        .card-icon.blue svg {
+            color: #2563eb;
+        }
+        .card-icon.green svg {
+            color: #16a34a;
+        }
+        .card h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #0f172a;
+            margin-bottom: 8px;
+        }
+        .card p {
+            color: #64748b;
+            font-size: 0.875rem;
+            line-height: 1.5;
+        }
+        @media (max-width: 640px) {
+            .cards {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>파일 관리 시스템</h1>
+        <p>파일을 업로드하고 관리하세요</p>
+    </div>
+
+    <div class="cards">
+        <a th:href="@{/upload}" class="card">
+            <div class="card-icon blue">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+                </svg>
+            </div>
+            <h2>파일 업로드</h2>
+            <p>새로운 파일을 업로드합니다. 드래그 앤 드롭을 지원합니다.</p>
+        </a>
+
+        <a th:href="@{/files}" class="card">
+            <div class="card-icon green">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/>
+                </svg>
+            </div>
+            <h2>파일 목록</h2>
+            <p>업로드된 파일을 확인하고 다운로드합니다.</p>
+        </a>
+    </div>
+</div>
+</body>
+</html>
