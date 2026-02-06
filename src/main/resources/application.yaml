@@ -8,5 +8,9 @@ spring:
       max-file-size: 10MB      # 개별 파일당 최대 크기
       max-request-size: 50MB   # HTTP 요청 1개당 총 최대 크기 (여러 파일 합계)
 
+
 upload:
   directory: C:\Users\luv_3\study\sign-image-server\upload\
+
+server:
+  port: 8092

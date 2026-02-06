@@ -13,6 +13,7 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.stream.Stream;
 
+import static org.apache.commons.io.FilenameUtils.getBaseName;
 import static org.springframework.util.StringUtils.hasText;
 
 @Slf4j
@@ -34,15 +35,52 @@ public record FileStore(
             return;
         }
 
-        var storeFileName = hasText(customFileName)
-                ? customFileName
-                : multipartFile.getOriginalFilename();
+        var storeFileName = createStoreFileName(multipartFile, customFileName);
 
         log.info("storeFileName = {}", storeFileName);
 
         validateDirectory(fileDirectory);
 
+        validateFile(storeFileName);
+
         multipartFile.transferTo(new File(getFullPath(storeFileName)));
+    }
+
+    private String createStoreFileName(
+            MultipartFile multipartFile,
+            String customFileName
+    ) {
+        if (hasText(customFileName)) {
+            String ext = extractExt(multipartFile.getOriginalFilename());
+            return customFileName + "." + ext;
+        }
+
+        return multipartFile.getOriginalFilename();
+    }
+
+    private String extractExt(String originalFilename) {
+        if (originalFilename == null) {
+            throw new IllegalArgumentException("originalFilename is null");
+        }
+
+        int pos = originalFilename.lastIndexOf('.');
+        return originalFilename.substring(pos + 1);
+    }
+
+    private void validateFile(String storeFileName) throws IOException {
+        try (Stream<Path> pathStream = Files.list(Path.of(fileDirectory))) {
+            pathStream.filter(path -> getBaseName(path.getFileName().toString())
+                    .equals(getBaseName(storeFileName))
+            ).forEach(path -> {
+                try {
+                    Files.delete(path);
+                    log.info("success delete exist userId file : {}", path.getFileName());
+                } catch (IOException e) {
+                    log.error("fail delete exist userId file : {}", path.getFileName(), e);
+                    throw new RuntimeException(e);
+                }
+            });
+        }
     }
 
     public List<FileItem> findFiles() throws IOException {

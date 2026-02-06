@@ -20,7 +20,7 @@ public record FileItem(
         return new FileItem(
                 FilenameUtils.getBaseName(path.getFileName().toString()),
                 path.getFileName().toString(),
-                Files.size(path),
+                Files.size(path) / 1024,
                 FileStore.isImage(path),
                 Files.getLastModifiedTime(path)
                         .toInstant()

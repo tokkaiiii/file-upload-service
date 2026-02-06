@@ -45,7 +45,7 @@ public record SignController(
     public String upload(
             @ModelAttribute UploadRequest uploadRequest,
             RedirectAttributes redirectAttributes
-    ) {
+    ) throws IOException {
         log.info("==== start file upload ====");
 
         try {
